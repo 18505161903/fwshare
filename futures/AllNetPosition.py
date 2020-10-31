@@ -4,7 +4,7 @@
 import datetime
 from time import time
 import pandas as pd
-import akshare as ak
+import fushare as ak
 
 pd.set_option('display.width', None)  # 设置字符显示宽度
 pd.set_option('display.max_rows', None)  # 设置显示最大行
@@ -28,13 +28,13 @@ def handle(path):
     - 去除逗号，
     - 转化为浮点数类型
     """
-    markets = ['CZC', 'SHF', 'DCE']
+    markets = ['CZC','SHF','DCE']#'CZC', 'SHF',
     df = pd.DataFrame()
     for market in markets:
-        # begin = datetime.date(2020, 10, 20)
-        # end = datetime.date(2020, 10, 20)
-        begin = datetime.date.today()
-        end = begin
+        begin = datetime.date(2020, 10, 27)
+        end = datetime.date(2020, 10, 27)
+        # begin = datetime.date.today()
+        # end = begin
         print(str(begin)+' 正在拉取'+market+'...')
         for i in range((end - begin).days + 1):
             day = begin + datetime.timedelta(days=i)
@@ -45,38 +45,40 @@ def handle(path):
                     value['date'] = days
                     if market == 'CZC':
                         value = value[value['symbol'] == value['variety']]
-                        value = value.applymap(lambda x: x.replace(',', '').replace("-", ""))
+                        # print(value)
+                        # value = value.applymap(lambda x: x.replace(',', '').replace("-", ""))
                         df = df.append(value)
-                        print('拉取了' + market+' '+df['symbol'].iloc[-1])
+                        # print(days+' 拉取了' + market+' '+df['symbol'].iloc[-1])
                     if market == 'SHF':
                         value = value[-value['rank'].isin([999])]
                         df = df.append(value)
-                        print('拉取了' + market + ' ' + df['symbol'].iloc[-1])
+                        # print(days+' 拉取了' + market + ' ' + df['symbol'].iloc[-1])
                     if market == 'DCE':
                         value = value[-value['rank'].isin([999])]
                         # value = value.applymap(lambda x: x.replace(',', '').replace("-", ""))
                         df = df.append(value)
-                        print('拉取了' + market+' '+df['symbol'].iloc[-1])
+                        # print(days+' 拉取了' + market+' '+df['symbol'].iloc[-1])
                     if market == 'CFE':
                         value = value[-value['rank'].isin([999])]
                         df = df.append(value)
-                        print('拉取了' + market+' '+df['symbol'].iloc[-1])
+                        # print(days+' 拉取了' + market+' '+df['symbol'].iloc[-1])
+                    df = df.append(value)
             except:
                 print(days, market, '数据异常')
                 continue
     df = df.apply(pd.to_numeric, errors="ignore")
     #净持仓
     long = df.groupby(['date', 'variety', 'long_party_name'])[
-        ['long_open_interest']].sum()
+        ['long_openIntr']].sum()
     short = df.groupby(['date', 'variety', 'short_party_name'])[
-        ['short_open_interest']].sum()
+        ['short_openIntr']].sum()
     # # 合并
     frames = [long, short]
     position = pd.concat(frames, axis=1, sort=True).fillna(0).reset_index()
     # 字段更名
     position = position.rename(columns={'level_0': 'date', 'level_1': 'variety', 'level_2': 'BrokerID'})
-    position['net'] = position.apply(lambda x: x['long_open_interest'] - x['short_open_interest'], axis=1)
-    party_names = ['永安期货', '海通期货', '中信期货']
+    position['net'] = position.apply(lambda x: x['long_openIntr'] - x['short_openIntr'], axis=1)
+    party_names = ['永安期货', '海通期货', '中信期货', '银河期货', '国泰君安']
     df = pd.DataFrame()
     for i in party_names:
         try:
@@ -90,7 +92,7 @@ def handle(path):
     net_df = two_level_index_series.unstack()
     net_df['合计'] = net_df.apply(lambda x: x.sum(), axis=1)
     net_df = net_df.rename_axis(columns=None).reset_index()
-    net_df = net_df[['date','variety', '永安期货', '海通期货', '中信期货', '合计']]
+    net_df = net_df[['date','variety', '永安期货', '海通期货', '中信期货', '银河期货', '国泰君安', '合计']]
     # print(net_df)
     net_df.to_excel(path, index=False)
     print(net_df)
