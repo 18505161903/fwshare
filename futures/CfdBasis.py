@@ -3,7 +3,7 @@ from fushare.dailyBar import *
 from fushare.cot import *
 from fushare.cons import *
 import pandas as pd
-from pymongo import MongoClient
+# from pymongo import MongoClient
 
 calendar = cons.get_calendar()
 pd.set_option('display.width', None)  # 设置字符显示宽度
@@ -19,39 +19,28 @@ def get_mainSubmainMarket_bar(type = 'symbol',  var = 'RB',date= None, start = N
     if type == 'symbol':
         df = get_future_daily(start=date, end=date, market=symbolMarket(var))
         df = df[df['variety'] == var]
-        # print(df)
         return df
 
     if type == 'var':
         df = pd.DataFrame()
-        for market in ['DCE','cfe','SHFE','CZCE']:
+        for market in ['dce','cffex','shfe','czce']:
             df = df.append(get_future_daily(start=date, end=date, market=market))
             df['market'] = market.upper()
-            # print(df)
         varList = list(set(df['variety']))
-        # print(varList)
 
-        dfL=pd.DataFrame()
+        dfL = pd.DataFrame()
         for var in varList:
             try:
-                ry = get_mainSubmainMarket(date, var,df = df)
-                # ry['market']=df['market']
-                # print(ry)
+                ry = get_mainSubmainMarket(date, var, df=df)
                 if ry:
-                    dfL = dfL.append(pd.DataFrame([ry], index=[var],columns=['差价','basicPrice(%)','symbol1','symbol2','M-differ','Slope(%)']))
-
-                    # dfL['market']=dfL[dfL['symbol2']==df['symbol2']]#&df['market']
-                    # df['market']=dfL
-
-                    # print(dfL)
+                    dfL = dfL.append(pd.DataFrame([ry], index=[var], columns=['差价', 'basicPrice(%)', 'symbol1', 'symbol2', 'M-differ', 'Slope(%)']))
             except:
                 pass
         dfL['date'] = date
         # print(df)
         # dfL2=pd.DataFrame()
         for i in dfL['symbol2'].drop_duplicates():
-        #     # print(i)
-            df2=df[df['symbol']==i]['market']
+            df2 = df[df['symbol'] == i]['market']
             dfL.append(df2)
         # dfL=dfL2.append(dfL)
         #     print(df2)
@@ -72,11 +61,9 @@ def get_mainSubmainMarket_bar(type = 'symbol',  var = 'RB',date= None, start = N
 
         dfL = long.append(short)#.dropna().drop_duplicates()
 
-
-
         return dfL
 
-def get_mainSubmainMarket(date = None, var = 'IF',symbol1 = None, symbol2 = None,c=None,df = None):
+def get_mainSubmainMarket(date = None, var = 'IF',symbol1 = None, symbol2 = None,df = None):
 
     date = cons.convert_date(date) if date is not None else datetime.date.today()
     if date.strftime('%Y%m%d') not in calendar:
@@ -97,7 +84,7 @@ def get_mainSubmainMarket(date = None, var = 'IF',symbol1 = None, symbol2 = None
 
     close1 = df['close'][df['symbol'] == symbol1.upper()].tolist()[0]
     close2 = df['close'][df['symbol'] == symbol2.upper()].tolist()[0]
-    # print(symbol1,close1,symbol2,close2)
+    # print(symbol2,close2)
 
     A = re.sub(r'\D', '', symbol1)
     A1 = int(A[:-2])
@@ -112,42 +99,60 @@ def get_mainSubmainMarket(date = None, var = 'IF',symbol1 = None, symbol2 = None
         return False
     if c > 0:
         #做多 (近月-远月)/远月/相差月数*100%
-        return close1-close2,round((close1-close2)/close2/c*100,2), symbol1,symbol2,c,round((close2-close1)/((close2+close1)/2)/c*12,2)
+        return close1-close2,round((close1-close2)/close2/c*100,2), symbol1,symbol2,close2,round((close2-close1)/((close2+close1)/2)/c*12,2)
     else:
         # 做空 (远月-近月)/远月/相差月数*100%
-        return close2-close1,round((close2-close1)/close2/c*100,2), symbol1,symbol2,c,round((close2-close1)/((close2+close1)/2)/c*12,2)#.lower()
+        return close2-close1,round((close2-close1)/close2/c*100,2), symbol1,symbol2,close2,round((close2-close1)/((close2+close1)/2)/c*12,2)#.lower()
         #
         #月差接近3%两月资金炒翻翻，商品保证金一般6%左右，远月向近月靠拢2月资金翻倍
 
 
 if __name__ == '__main__':
-    # data = get_mainSubmainMarket_bar(date='20200817', type='var')
+    data = get_mainSubmainMarket_bar(date='20200817', type='var')
     # print(data)
-    # data=get_mainSubmainMarket(date='20201013', var='BU')
-    # print(data)
+    data=get_mainSubmainMarket(date='20201013', var='BU')
+    print(data)
 
     # 连接数据库u
-    client = MongoClient('localhost', 27017)
-    db = client.futures34
-    cfd = db.basicPrice
-    begin = datetime.date(2020, 10, 20)
-    end = datetime.date(2020, 10, 20)
+    # client = MongoClient('localhost', 27017)
+    # db = client.futures34
+    # cfd = db.basicPrice
 
-    for i in range((end - begin).days + 1):
-        # print(i)
-        day = begin + datetime.timedelta(days=i)
-        days = day.strftime('%Y%m%d')
-        # print(days)
-
-        try:
-          # data=get_mainSubmainMarket(date,'BU')
-            data =get_mainSubmainMarket_bar(date=days, type='var')
-            data['date'] = days
-            print(data)
-            # cfd.insert_many(json.loads(data.T.to_json()).values())
-            # print(json.loads(data.T.to_json()).values())
-            # print(data)
-        except:
-            print(days, '数据异常')
-            continue
-
+    # begin = datetime.date(2020, 10, 20)
+    # end = datetime.date(2020, 10, 29)
+    #
+    # df = pd.DataFrame()
+    # for i in range((end - begin).days + 1):
+    #     # print(i)
+    #     day = begin + datetime.timedelta(days=i)
+    #     days = day.strftime('%Y%m%d')
+    #     try:
+    #       # data=get_mainSubmainMarket(date,'BU')
+    #         data =get_mainSubmainMarket_bar(date=days, type='var')
+    #         data['date'] = days
+    #
+    #
+    #         df=df.append(data)
+    #
+    #         # df.to_csv('D:/PyFile/CfdBasis.csv')
+    #         # cfd.insert_many(json.loads(data.T.to_json()).values())
+    #         # print(json.loads(data.T.to_json()).values())
+    #         # print(data)
+    #     except:
+    #         print(days, '数据异常')
+    #         continue
+    # df=df.reset_index()
+    # df=df.rename(columns={'index':'variety'})
+    # df = df[['date', 'variety', 'symbol2', 'close']]
+    # # data = pd.DataFrame()
+    # for var in df['variety'].drop_duplicates():
+    #     # print(var)
+    #     try:
+    #         #
+    #         dfs = df[df['variety'] == var]
+    #         # dfs['date']=days
+    #         #     # data=data.append(df)
+    #         print(dfs)
+    #     except:
+    #         pass
+    #     continue
