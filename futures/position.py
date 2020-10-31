@@ -4,7 +4,7 @@ import datetime
 import pandas as pd
 import json
 from pymongo import MongoClient
-import future as ak
+import fushare as ak
 
 pd.set_option('display.width', None)  # 设置字符显示宽度
 pd.set_option('display.max_rows', None)  # 设置显示最大行
@@ -25,15 +25,15 @@ def get_trade_rank(market = 'SHF', date = None):
 
 if __name__ == '__main__':
 
-    markets = ['CZC', 'SHF','CFE','DCE']#, 'CZC', 'SHF','CFE','DCE'
+    markets = ['CZC']#, 'CZC', 'SHF','CFE','DCE'
     # 连接数据库
     client = MongoClient('localhost', 27017)
     db = client.futures2
     position = db.position
 
     for market in markets:
-        begin = datetime.date(2020,10,14)
-        end = datetime.date(2020,10,14)
+        begin = datetime.date(2020,10,27)
+        end = datetime.date(2020,10,27)
         # end = datetime.date.today()
 
         for i in range((end - begin).days + 1):
@@ -45,7 +45,7 @@ if __name__ == '__main__':
                 for key, value in df.items():
                     value['date'] = days
                     value['symbol'] = value['symbol'].str.upper()
-
+                    print(value)
                     # vars = position[position['variety'] == var]
                     # position.insert(json.loads(value.T.to_json()).values())
                     # print(value)
@@ -53,12 +53,12 @@ if __name__ == '__main__':
                     #去除具体合约。因汇总持仓有问题
                     if market != 'CZC':
                         print('insert into',key)
-                        position.insert_many(json.loads(value.T.to_json()).values())
+                        # position.insert_many(json.loads(value.T.to_json()).values())
                     else:
-                        value=value[value['symbol']==value['variety']]
+                        value=value[value['symbol'] ==value['variety']]
                         print('insert into',key)
-                        position.insert_many(json.loads(value.T.to_json()).values())
-                        print(json.loads(value.T.to_json()).values())
+                        # position.insert_many(json.loads(value.T.to_json()).values())
+                        # print(json.loads(value.T.to_json()).values())
             except:
                 print(days,market,'数据异常')
                 continue

@@ -130,8 +130,8 @@ if __name__ == '__main__':
     client = MongoClient('localhost', 27017)
     db = client.futures34
     cfd = db.basicPrice
-    begin = datetime.date(2020, 10, 28)
-    end = datetime.date(2020, 10, 28)
+    begin = datetime.date(2020, 10, 20)
+    end = datetime.date(2020, 10, 20)
 
     for i in range((end - begin).days + 1):
         # print(i)
