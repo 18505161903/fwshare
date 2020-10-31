@@ -87,4 +87,3 @@ if __name__ == '__main__':
     var = 'M'
     flows=flows(futures,start,end,var)
     print(flows)
-    print(flows)
