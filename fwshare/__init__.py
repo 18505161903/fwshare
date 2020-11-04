@@ -80,7 +80,7 @@ pandas最新版0.24.0的pd.read_html函数在basis脚本中识别格式有区别
 """
 
 
-__version__ = '2.2.1'
+__version__ = '2.0.1'
 __author__ = 'fw'
 
 
