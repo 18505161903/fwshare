@@ -16,5 +16,5 @@ setup(
     include_package_data=True,
     platforms="any",
     install_requires=[],  # 这个项目需要的第三方库
-    data_files=[('fwshare', ['fwshare\calendar.json'])]#打包只有py文件，其他格式不在包含里，需要添加其他格式文件
+    data_files=[('fwshare', ['fwshare\fwshare\calendar.json'])]#打包只有py文件，其他格式不在包含里，需要添加其他格式文件
 )
