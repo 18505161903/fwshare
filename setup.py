@@ -2,7 +2,7 @@ from setuptools import setup, find_packages  # 这个包没有的可以pip一下
 
 setup(
     name="fwshare",  # 这里是pip项目发布的名称
-    version="2.0.1",  # 版本号，数值大的会优先被pip
+    version="2.0.2",  # 版本号，数值大的会优先被pip
     keywords=("pip", "fwshare"),
     description="fwshare",
     long_description="fwshare",
